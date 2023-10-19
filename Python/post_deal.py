@@ -1,7 +1,7 @@
 import requests
-
+import plooconstants
 server = "https://api2.ploomes.com/Deals"
-token = "YOUR API KEY"
+token = plooconstants.API_KEY
 headers = {
 
   "Authorization": f"Bearer {token}",
@@ -17,7 +17,7 @@ data = {
   "ContactId": 1234567, #if you want your deal to correspond to a specific contact, put the contact id here.
   "OwnerId" : 1234567, #id of the deal owner.
   "Amount" : 100, #deal amount in BRL.
-  "PipelineId": 1234567 #PipeId.
+  "PipelineId": 1234567, #PipeId.
   "StageId": 1234567 #StageId.
 
 }
