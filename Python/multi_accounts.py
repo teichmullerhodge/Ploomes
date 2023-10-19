@@ -2,7 +2,7 @@ import requests
 import json
 import plooconstants
 
-SERVER = "https://api2.ploomes.com/"
+SERVER = f"{plooconstants.SERVER}/"
 API_KEY = plooconstants.API_KEY
 ENDPOINTS = []
 
