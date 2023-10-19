@@ -6,7 +6,7 @@ import plooconstants
 total_amount = 0
 number_of_quotes = 0
 
-server = "https://api2.ploomes.com/Quotes"
+server = f"{plooconstants.SERVER}/Quotes"
 
 
 token = plooconstants.API_KEY
