@@ -2,7 +2,7 @@ import requests
 import json
 import plooconstants
 
-server = "https://api2.ploomes.com/Fields@Entities"
+server = f"{plooconstants.SERVER}/Fields@Entities"
 token = plooconstants.API_KEY
 headers = {
 
