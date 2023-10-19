@@ -1,6 +1,6 @@
 import requests
 import plooconstants
-server = "https://api2.ploomes.com/Deals"
+server = f"{plooconstants.SERVER}/Deals"
 token = plooconstants.API_KEY
 
 headers = {
