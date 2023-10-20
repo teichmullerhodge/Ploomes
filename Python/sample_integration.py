@@ -2,7 +2,7 @@ import requests
 import json
 import plooconstants
 
-PLOOMES_SERVER = "https://api2.ploomes.com/"
+PLOOMES_SERVER = plooconstants.SERVER
 PLOOMES_TOKEN = plooconstants.API_KEY
 
 APP_SERVER = "https://app.com/api/resources" #Exemplo aleatório
