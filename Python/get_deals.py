@@ -8,7 +8,7 @@ headers = {
     "User-Key": token
 }
 
-deals_per_page = 100
+deals_per_page = 300
 page_number = 1
 all_deals = []
 
