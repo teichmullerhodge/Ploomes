@@ -1,0 +1,276 @@
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  </head>
+  <html><body>
+  <div class="suncallContainer">
+    <img src="https://stgploomescrmprd01.blob.core.windows.net/crm-prd/6934002158E3/Images/bd8e2d17d8514bcabd8d8157fc4e980d.png" width="150" height="50">
+    <button onclick="callPhone()" onmouseenter="phoneVolume()" onmouseleave="phoneDown()" id="callBtn" class="callButton"><i class="fa-solid fa-phone" id="phoneIcon"></i> (43) 99670-6748</button>
+  </div>
+  </body></html>
+  
+  <style>
+  
+html, body {
+  overflow: -moz-scrollbars-none;  /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+
+
+    :root {
+  
+      --suncolor: #ea6018;
+    }
+    .suncallContainer {
+  
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 105px;
+      padding: 4px;
+      border-radius: 14px;
+      background-color: white;
+    }
+
+    
+  
+    .callButton {
+      font-family: "Source Sans Pro", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background-color: var(--suncolor);
+      font-weight: bold;
+      color: white;
+      margin-top: 10px;
+      border-radius: 12px;
+      padding: 8px;
+      border: none;
+      font-size: 16px;
+      transition: 0.5s;
+    }
+  
+    .callButton:hover {
+  
+      background: none;
+      color: var(--suncolor);
+      cursor: pointer;
+    }
+  
+  </style>
+  
+  <script>
+  
+  var currentPhone = ''
+  var currentId = 0;
+  var peer = 0;
+  
+
+function formatPhoneNumber(phone) {
+  const areaCode = phone.slice(0, 2);
+  const firstPart = phone.slice(2, 7);
+  const secondPart = phone.slice(7);
+  return `(${areaCode}) ${firstPart}-${secondPart}`;
+}
+
+  async function getDealPhone() {
+  
+      const url = window.location.href;  
+      const dealId = url.split('deal/')[1];
+      currentId = parseInt(dealId);
+      const fetchURL = `https://api2.ploomes.com/Deals?$select=Contact&$expand=Contact($expand=Phones($select=PhoneNumber, SearchPhoneNumber))&$filter=Id eq ${dealId}`
+      const self = PloomesServer.getSelf();
+      const sunKey = self.UserKey;
+      const authHeaders = {'Authorization' : `Bearer ${sunKey}`, 'User-Key' : sunKey};
+      const response = await fetch(fetchURL, {
+  
+          method: 'GET',
+          headers: authHeaders
+  
+      });
+  
+  
+      if(response.ok) {
+  
+          const data = await response.json();
+          const phonesData = await data.value[0].Contact.Phones;
+          if(phonesData[0]) {
+            
+            const phoneNumber = phonesData[0].PhoneNumber;
+            const searchNumber = phonesData[0].SearchPhoneNumber;  
+            const sunCall  = document.getElementById('callBtn');
+    
+            sunCall.innerHTML  = phoneNumber && searchNumber ? `<i class="fa-solid fa-phone" id="phoneIcon"></i> ${phoneNumber}` : 'Cliente não possui telefone';
+            currentPhone       = searchNumber ? searchNumber : '';
+          }
+
+          else {
+            
+            const sunCall  = document.getElementById('callBtn');
+            sunCall.innerHTML  = 'Cliente não possui telefone';
+            currentPhone        = '';
+          
+          }
+      }
+      
+      else {
+
+        console.error(`Request failed with status code: ${response.status}`)
+        console.error(`Error ${await response.text}`)
+      }
+
+}
+  
+  
+  async function callPhone() {
+  
+    const callURL = 'https://sunhub.vipsolutions.com.br/services/call';
+  
+    const userAccount = PloomesServer.getSelf();
+    const key = userAccount.UserKey;
+  
+    const url = window.location.href;  
+    const isContact = url.includes('deal') ? false : true;
+    const payload = {
+  
+      'peer' : peer,
+      'phone' : currentPhone,
+      'callid' : `${currentId}&${key}`,
+      'contactRoute' : isContact,
+    };
+  
+  console.log(JSON.stringify(payload));
+  
+  var vipHeaders = {'Content-Type' : 'application/x-www-form-urlencoded;charset=UTF-8'};
+  var formBody = [];
+
+  for(var property in payload){
+  
+      const encodedKey = encodeURIComponent(property);
+      const encodedValue = encodeURIComponent(payload[property]);
+      formBody.push(encodedKey + '=' + encodedValue);
+  }
+  
+  formBody = formBody.join("&");
+  
+  const response = await fetch(callURL, {
+      
+        method: 'POST',
+        headers: vipHeaders,
+        body: formBody
+  });
+  
+  
+  if(response.ok){
+        
+        const sunCall  = document.getElementById('callBtn');
+        const userPhone = currentPhone;
+        const formatedPhone = formatPhoneNumber(userPhone.toString());
+        sunCall.innerHTML  = `<i class="fa-solid fa-circle fa-beat-fade" id="phoneIcon"></i> ${formatedPhone}`;
+        console.log('calling...');
+ 
+  }
+  
+  else {
+  
+          console.error(`Request failed with status code: ${response.status}`);
+          console.error(`Error: ${await response.text()}`);
+          
+          }
+  
+      }
+
+    async function getContactPhone() {
+          
+          const url = window.location.href;  
+          const contactId = url.split('contact/')[1];
+          currentId = parseInt(contactId);
+          const fetchURL = `https://api2.ploomes.com/Contacts?$select=Phones&$expand=Phones($select=PhoneNumber,SearchPhoneNumber)&$filter=Id+eq+${currentId}`;
+          const self = PloomesServer.getSelf();
+          const sunKey = self.UserKey;
+          const authHeaders = {'Authorization' : `Bearer ${sunKey}`, 'User-Key' : sunKey};
+          const response = await fetch(fetchURL, {
+    
+            method: 'GET',
+            headers: authHeaders
+    
+          });
+
+          if(response.ok) {
+
+            const data = await response.json();
+            const phonesData = await data.value[0].Phones;
+            const phoneNumber = phonesData[0].PhoneNumber;
+            const searchNumber = phonesData[0].SearchPhoneNumber;  
+            const sunCall  = document.getElementById('callBtn');
+            sunCall.innerHTML  = phoneNumber && searchNumber ? `<i class="fa-solid fa-phone" id="phoneIcon"></i> ${phoneNumber}` : 'Cliente não possui telefone';
+            currentPhone        = searchNumber ? searchNumber : '';
+  
+
+          }
+        
+          else {
+
+            console.error(`Request failed with status code: ${response.status}`)
+            console.error(`Error ${await response.text}`)
+        }
+          
+    }
+
+    async function getPhone() {
+
+      const url = window.location.href;
+      if(url.includes("contact")) {
+
+          return await getContactPhone();
+      }
+
+      else {
+
+          return await getDealPhone();
+          
+          }
+      }
+
+  
+    function getPeer() {
+  
+            const peerFieldKey = "user_1A9931F6-4B0C-4C94-9017-986DEEC98199";
+            const userProperties = PloomesServer.getSelf().OtherProperties; 
+            for(fields of userProperties) {
+            if(fields.FieldKey == peerFieldKey) {
+              return fields.IntegerValue;
+  
+        }
+      }    
+    } 
+  
+    function phoneDown() {
+      const el = document.getElementById('phoneIcon');
+      el.className = "fa-solid fa-phone"
+    }
+  
+    function phoneVolume() {
+      const el = document.getElementById('phoneIcon');
+      el.className = "fa-solid fa-phone-volume"
+    }
+  
+  
+  document.addEventListener("DOMContentLoaded", async function() {
+          
+          const sunCall = document.getElementById('callBtn');
+          sunCall.innerHTML  = `<i class="fa-solid fa-circle-notch fa-spin"></i>`;
+          peer = await getPeer();
+          console.log(`Current peer: ${peer}`);
+          await getPhone();
+      });
+  
+  
+  
+  
+  </script>
+  
